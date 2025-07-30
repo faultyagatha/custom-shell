@@ -23,3 +23,39 @@ This program is a basic Unix-like shell that:
   - `SIGINT` (`Ctrl+C`) to kill foreground processes
   - `SIGTSTP` (`Ctrl+Z`) to stop foreground processes
   - `SIGCHLD` to track when children exit or stop.
+
+## Job State + Signal Flow Diagram
+
+                  +---------------------+
+                  |     New Job (exec)  |
+                  +---------------------+
+                            |
+                            v
+                  +---------------------+
+                  |   Foreground (FG)   |
+                  +---------------------+
+                   |        |        |
+                   |        |        |
+                   |        |        +-----------------------------+
+                   |        |                                     |
+                   |        |                                   Ctrl+C
+                   |        |                               or natural exit
+                   |        v                                     |
+                   |   +---------------------+                    |
+                   |   |      Stopped (T)     |<------------------+
+                   |   +---------------------+
+                   |        |        |
+                Ctrl+Z      |        | SIGCONT + fg
+           (SIGTSTP)        |        v
+                            |   +---------------------+
+                            |   | Background (BG)     |
+                            |   +---------------------+
+                            |        |        |
+                            |        |        |
+                            |        |        +------------------+
+                            |        |                           |
+                            |        |                        Ctrl+C
+                            |        |                    or natural exit
+                            |        v                           |
+                            +-----> Terminated <-----------------+
+                                   (exit or signal)
